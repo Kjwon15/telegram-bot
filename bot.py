@@ -1,6 +1,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 
 from telegram import Bot
 from util import extract_token
@@ -27,22 +28,31 @@ class TelegramBot(object):
                 self.offset = updates[-1].update_id + 1
 
     def run_command(self, update):
-        tokens = extract_token(update.message.text)
-        cmd = tokens[0]
-        args = tokens[1:]
+        not_matched = True
+        for pattern, func in self.commands.items():
+            text = update.message.text
+            matched = pattern.match(text)
 
-        if cmd in self.commands:
-            reply = self.commands[cmd](*args)
-            self.bot.sendMessage(update.message.chat_id, reply)
-        else:
-            pass
+            if not matched:
+                continue
 
-    def command(self, funcname):
+            not_matched = False
+
+            kwargs = matched.groupdict()
+            reply = func(**kwargs)
+            if reply:
+                self.bot.sendMessage(update.message.chat_id, reply)
+
+        if not_matched:
+            self.bot.sendMessage(update.message.chat_id, 'Not matched')
+
+    def command(self, pattern):
         """
         This function is a decorator to bind command.
         """
         def real_decorator(func):
-            self.commands[funcname] = func
+            compiled_pattern = re.compile(pattern)
+            self.commands[compiled_pattern] = func
             return func
 
         return real_decorator

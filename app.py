@@ -10,13 +10,12 @@ bot = TelegramBot(TOKEN)
 
 redisconn = redis.Redis()
 
-@bot.command('/echo')
-def echo(*args):
-    msg = ' '.join(args)
+@bot.command(r'^echo (?P<msg>.+)')
+def echo(msg):
     return msg
 
-@bot.command('/wifi')
-def send_wifi_info(*args):
+@bot.command('wifi status')
+def send_wifi_info():
     clients = [
         {
             'name': key,
@@ -26,8 +25,8 @@ def send_wifi_info(*args):
         }
         for key in redisconn.keys('*:*')
     ]
-    reply = '\n'.join(
-        '{0[name]} {0[strength]} {0[ttl]} {0[since]}'.format(client)
+    reply = 'since, ttl, strength, name\n' +  '\n'.join(
+        '{0[since]}, {0[ttl]}, {0[strength]}, {0[name]}'.format(client)
         for client in clients
     )
 
