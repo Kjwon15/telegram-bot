@@ -62,21 +62,24 @@ def send_wifi_info():
              ')')
 def play_music(artist=None, playlist=None, genre=None):
     mpd_client = get_mpd_client()
-    if playlist:
-        mpd_client.clear()
-        mpd_client.load(playlist)
-        mpd_client.play()
-    elif artist:
-        mpd_client.clear()
-        mpd_client.searchadd('artist', artist)
-        mpd_client.play()
-    elif genre:
-        mpd_client.clear()
-        mpd_client.searchadd('genre', genre)
-        mpd_client.play()
-
-    mpd_client.close()
-    return 'OK'
+    try:
+        if playlist:
+            mpd_client.clear()
+            mpd_client.load(playlist)
+            mpd_client.play()
+        elif artist:
+            mpd_client.clear()
+            mpd_client.searchadd('artist', artist)
+            mpd_client.play()
+        elif genre:
+            mpd_client.clear()
+            mpd_client.searchadd('genre', genre)
+            mpd_client.play()
+    except Exception as e:
+        return str(e)
+    else:
+        mpd_client.close()
+        return 'OK'
 
 
 if __name__ == '__main__':
