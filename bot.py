@@ -51,7 +51,7 @@ class TelegramBot(object):
         This function is a decorator to bind command.
         """
         def real_decorator(func):
-            compiled_pattern = re.compile(pattern)
+            compiled_pattern = re.compile(pattern, re.U | re.I)
             self.commands[compiled_pattern] = func
             return func
 
