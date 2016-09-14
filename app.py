@@ -4,6 +4,7 @@ import os
 
 import mpd
 import redis
+import requests
 
 from bot import TelegramBot
 
@@ -13,6 +14,8 @@ bot = TelegramBot(TOKEN)
 MPD_PASSWORD = os.environ.get("MPD_PASSWORD")
 MPD_HOST = os.environ.get("MPD_HOST", "localhost")
 MPD_PORT = os.environ.get("MPD_POST", 6600)
+
+YEELIGHT_HOST=os.environ.get("YEELIGHT_BASE_URL")
 
 redisconn = redis.Redis()
 
@@ -80,6 +83,34 @@ def play_music(artist=None, playlist=None, genre=None):
     else:
         mpd_client.close()
         return 'OK'
+
+
+@bot.command(r'light (?P<switch>off|on)')
+@bot.command(r'turn (?P<switch>on|off) (the )?light(?: in (?P<minutes>\d+) minutes?)?')
+def light_switch(switch=None, minutes=None):
+    try:
+        if switch == 'off' and minutes:
+            resp = requests.post(
+                '{}/sleep'.format(YEELIGHT_HOST),
+                {'minutes': minutes})
+        else:
+            resp = requests.post(
+                '{}/switch'.format(YEELIGHT_HOST),
+                {'switch': switch})
+        return resp.text
+    except Exception as e:
+        return str(e)
+
+
+@bot.command(r'(?P<color>\w+) color light')
+def light_color(color=None):
+    try:
+        resp = requests.post(
+            '{}/light'.format(YEELIGHT_HOST),
+            {'color': color})
+        return resp.text
+    except Exception as e:
+        return str(e)
 
 
 if __name__ == '__main__':
