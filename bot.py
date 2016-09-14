@@ -29,6 +29,10 @@ class TelegramBot(object):
 
     def run_command(self, update):
         not_matched = True
+        if update.message.text == 'help':
+            self.bot.sendMessage(update.message.chat_id, self.help())
+            return
+
         for pattern, func in self.commands.items():
             text = update.message.text
             matched = pattern.match(text)
@@ -56,3 +60,6 @@ class TelegramBot(object):
             return func
 
         return real_decorator
+
+    def help(self):
+        return '\n'.join(map(lambda x: x.pattern, self.commands))
