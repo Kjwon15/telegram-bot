@@ -15,6 +15,7 @@ class TelegramBot(object):
         self.offset = None
         self.commands = {}
         self.authed_user = collections.defaultdict(set)
+        self.admin_user = int(os.environ.get('ADMIN_USER', -1))
 
         if token:
             self.bot = Bot(token)
@@ -70,7 +71,8 @@ class TelegramBot(object):
             @functools.wraps(func)
             def wrapper(update, **kwargs):
                 user_id = update.message.from_user.id
-                if user_id in self.authed_user[category]:
+                if (user_id in self.authed_user[category]
+                    or user_id == self.admin_user):
                     return func(update, **kwargs)
                 else:
                     return 'You are not authed.'
