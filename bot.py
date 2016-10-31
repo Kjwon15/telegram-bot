@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+import collections
+import functools
 import os
 import re
 
@@ -12,6 +14,8 @@ class TelegramBot(object):
     def __init__(self, token=None):
         self.offset = None
         self.commands = {}
+        self.authed_user = collections.defaultdict(set)
+
         if token:
             self.bot = Bot(token)
 
@@ -43,7 +47,7 @@ class TelegramBot(object):
             not_matched = False
 
             kwargs = matched.groupdict()
-            reply = func(**kwargs)
+            reply = func(update=update, **kwargs)
             if reply:
                 self.bot.sendMessage(update.message.chat_id, reply)
 
@@ -58,6 +62,20 @@ class TelegramBot(object):
             compiled_pattern = re.compile(pattern, re.U | re.I)
             self.commands[compiled_pattern] = func
             return func
+
+        return real_decorator
+
+    def restrict_user(self, category):
+        def real_decorator(func):
+            @functools.wraps(func)
+            def wrapper(update, **kwargs):
+                user_id = update.message.from_user.id
+                if user_id in self.authed_user[category]:
+                    return func(update, **kwargs)
+                else:
+                    return 'You are not authed.'
+
+            return wrapper
 
         return real_decorator
 

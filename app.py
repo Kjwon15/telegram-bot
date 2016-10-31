@@ -35,12 +35,13 @@ def get_mpd_client():
 
 
 @bot.command(r'^echo (?P<msg>.+)')
-def echo(msg):
+def echo(update, msg):
     return msg
 
 
 @bot.command('wifi status')
-def send_wifi_info():
+@bot.restrict_user('wifi')
+def send_wifi_info(update):
     clients = [
         {
             'name': key,
@@ -63,7 +64,8 @@ def send_wifi_info():
              'some (?P<genre>.+)|'
              '(?P<playlist>.+)'
              ')')
-def play_music(artist=None, playlist=None, genre=None):
+@bot.restrict_user('music')
+def play_music(update, artist=None, playlist=None, genre=None):
     mpd_client = get_mpd_client()
     try:
         if playlist:
@@ -87,7 +89,8 @@ def play_music(artist=None, playlist=None, genre=None):
 
 @bot.command(r'light (?P<switch>off|on)')
 @bot.command(r'turn (?P<switch>on|off) (the )?light(?: in (?P<minutes>\d+) minutes?)?')
-def light_switch(switch=None, minutes=None):
+@bot.restrict_user('light')
+def light_switch(update, switch=None, minutes=None):
     try:
         if switch == 'off' and minutes:
             resp = requests.post(
@@ -103,7 +106,8 @@ def light_switch(switch=None, minutes=None):
 
 
 @bot.command(r'(?P<color>\w+) color light')
-def light_color(color=None):
+@bot.restrict_user('light')
+def light_color(update, color=None):
     try:
         resp = requests.post(
             '{}/light'.format(YEELIGHT_BASE_URL),
@@ -114,7 +118,8 @@ def light_color(color=None):
 
 
 @bot.command(r'light brightness (?P<brightness>\d+)')
-def light_brightness(brightness=0):
+@bot.restrict_user('light')
+def light_brightness(update, brightness=0):
     try:
         resp = requests.post(
             '{}/light'.format(YEELIGHT_BASE_URL),
@@ -125,7 +130,8 @@ def light_brightness(brightness=0):
 
 
 @bot.command(r'light warm (?P<warm>\d+)')
-def light_warm(warm=0):
+@bot.restrict_user('light')
+def light_warm(update, warm=0):
     try:
         warm = float(warm) / 100
         resp = requests.post(
