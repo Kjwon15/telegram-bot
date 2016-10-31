@@ -15,7 +15,7 @@ MPD_PASSWORD = os.environ.get("MPD_PASSWORD")
 MPD_HOST = os.environ.get("MPD_HOST", "localhost")
 MPD_PORT = os.environ.get("MPD_POST", 6600)
 
-YEELIGHT_HOST=os.environ.get("YEELIGHT_BASE_URL")
+YEELIGHT_BASE_URL=os.environ.get("YEELIGHT_BASE_URL")
 
 redisconn = redis.Redis()
 
@@ -91,11 +91,11 @@ def light_switch(switch=None, minutes=None):
     try:
         if switch == 'off' and minutes:
             resp = requests.post(
-                '{}/sleep'.format(YEELIGHT_HOST),
+                '{}/sleep'.format(YEELIGHT_BASE_URL),
                 {'minutes': minutes})
         else:
             resp = requests.post(
-                '{}/switch'.format(YEELIGHT_HOST),
+                '{}/switch'.format(YEELIGHT_BASE_URL),
                 {'switch': switch})
         return resp.text
     except Exception as e:
@@ -106,8 +106,31 @@ def light_switch(switch=None, minutes=None):
 def light_color(color=None):
     try:
         resp = requests.post(
-            '{}/light'.format(YEELIGHT_HOST),
+            '{}/light'.format(YEELIGHT_BASE_URL),
             {'color': color})
+        return resp.text
+    except Exception as e:
+        return str(e)
+
+
+@bot.command(r'light brightness (?P<brightness>\d+)')
+def light_brightness(brightness=0):
+    try:
+        resp = requests.post(
+            '{}/light'.format(YEELIGHT_BASE_URL),
+            {'brightness': brightness})
+        return resp.text
+    except Exception as e:
+        return str(e)
+
+
+@bot.command(r'light warm (?P<warm>\d+)')
+def light_warm(warm=0):
+    try:
+        warm = float(warm) / 100
+        resp = requests.post(
+            '{}/light'.format(YEELIGHT_BASE_URL),
+            {'warm': warm})
         return resp.text
     except Exception as e:
         return str(e)
